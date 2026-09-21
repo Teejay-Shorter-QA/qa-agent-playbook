@@ -66,7 +66,8 @@ def record_result(
             case["status"] = status
             case["verified_via"] = verified_via
             case["evidence"] = evidence
-            case["notes"] = notes
+            if notes is not None:
+                case["notes"] = notes
             break
     else:
         raise KeyError(f"no case {case_id!r} in {ticket_key}")

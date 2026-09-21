@@ -65,6 +65,29 @@ def test_record_result_missing_case_raises_key_error(tmp_path):
         tracker.record_result("SAMPLE-101", "AC99", "pass", "cli", "n/a", tmp_path)
 
 
+def test_record_result_on_missing_case_file_raises_file_not_found(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        tracker.record_result("NO-SUCH-TICKET", "AC1", "pass", "cli", "n/a", tmp_path)
+
+
+def test_record_result_without_notes_preserves_existing_notes(tmp_path):
+    tracker.create_cases("SAMPLE-101", SAMPLE_CASES, tmp_path)
+    tracker.record_result(
+        "SAMPLE-101", "AC1", "fail", "cli", "printed once instead of 3 times",
+        tmp_path, notes="flaky on CI",
+    )
+
+    tracker.record_result(
+        "SAMPLE-101", "AC1", "pass", "cli", "printed 3 times on retry", tmp_path,
+    )
+
+    data = yaml.safe_load((tmp_path / "SAMPLE-101" / "cases.yaml").read_text())
+    ac1 = data["cases"][0]
+    assert ac1["status"] == "pass"
+    assert ac1["evidence"] == "printed 3 times on retry"
+    assert ac1["notes"] == "flaky on CI"
+
+
 def test_generate_report_renders_table_and_summary(tmp_path):
     tracker.create_cases("SAMPLE-101", SAMPLE_CASES, tmp_path)
     tracker.record_result("SAMPLE-101", "AC1", "fail", "cli", "printed once instead of 3 times", tmp_path)
