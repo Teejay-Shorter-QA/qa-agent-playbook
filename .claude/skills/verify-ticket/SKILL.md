@@ -28,16 +28,24 @@ Run Phases 1–5 without stopping. Pause only for:
 - **Login hand-offs** (Jira/app SSO) — you cannot enter credentials; hand off and wait.
 - **One final confirmation** before Phase 6's external write (the Jira comment) — show the per-case
   table and the draft comment, get a yes, then post.
+- **Phase 3's run-plan confirmation** — `run-app-locally` pauses to show its derived run plan before
+  executing anything unfamiliar. This is expected, not a violation of "without stopping" — it's that
+  skill's own safety gate, not an extra controller-level pause.
 
 ## Phase 1 — Analyze the ticket and detect the target
 > `[Phase 1/6] Reading <KEY> and detecting the repo/branch and change surface.`
 
 1. Fetch the ticket (Atlassian MCP `getJiraIssue`, `fields: ["*all"]`). Read summary, description,
    Acceptance Criteria, comments.
-2. Detect the linked PR: `gh search prs "<KEY>" --json number,title,url,repository,state,headRefName
-   --limit 10`. The PR's repo is the **target repo**; its head branch is the **branch under test**.
-   If no PR is found, fall back to `TARGET_APP_DIR` in `.env` as the target repo (branch: whatever's
-   checked out); if that's unset too, ask for the repo + branch rather than guessing.
+2. Detect the linked PR: `gh search prs "<KEY>" --json number,title,url,repository,state --limit 10`
+   (`gh search prs` doesn't support a `headRefName` field). If a PR is found, get its branch with a
+   second call: `gh pr view <number> --repo <repository> --json headRefName`. The PR's repo is the
+   **target repo** (as a remote `owner/name`); its head branch is the **branch under test**. Resolve
+   the target repo to a **local checkout path**: if `TARGET_APP_DIR` in `.env` points at a local
+   clone of that same repo, use it; otherwise ask the user for the local path of that repo — don't
+   assume one. If no PR is found at all, fall back to `TARGET_APP_DIR` in `.env` as the target repo
+   (branch: whatever's checked out); if that's unset too, ask for the repo + branch rather than
+   guessing.
 3. Classify the change surface: does the target app expose a UI, an API, or only a CLI? This decides
    how Phase 4 observes outcomes.
 
@@ -57,10 +65,11 @@ repo. Capture how to reach the running app for Phase 4 (URL, or the CLI invocati
 
 If a case's expected state is gated by an environment-forced flag or config value (e.g. a flag stuck
 `on` everywhere, so the `off` behaviour never appears), **this is the seam** to plug in your own
-toggler: invoke your own flag-toggling skill here, conditionally, only for cases that need it. See
-`docs/extension-points.md` for what a toggler skill needs to accept/return to slot in without
-changing anything else in this phase. The baseline template ships no toggler — most target apps
-don't need one.
+toggler. Set it up here in Phase 3 if every case in the run needs the same treatment; if different
+cases need different flag states, invoke your toggler per-case instead, at the start of each case's
+walk in Phase 4. See `docs/extension-points.md` for what a toggler skill needs to accept/return to
+slot in without changing anything else in this phase. The baseline template ships no toggler — most
+target apps don't need one.
 
 ## Phase 4 — Verify each case
 > `[Phase 4/6] Working through the test cases (<UI | API | CLI> mode).`

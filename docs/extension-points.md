@@ -35,8 +35,9 @@ Field mapping from the baseline schema to a typical tracker:
 
 If your target app has an environment-forced feature flag (or similar server-side config) that
 blocks a test case from reaching its expected state — e.g. a flag stuck `on` everywhere, so the
-`off` behaviour never appears in any environment you can reach — this is a Phase 4 concern in
-`verify-ticket`.
+`off` behaviour never appears in any environment you can reach — this is a Phase 3/4 concern in
+`verify-ticket` — set up once in Phase 3 if uniform across all cases, or invoked per-case in Phase 4
+if it varies.
 
 `verify-ticket/SKILL.md`'s Phase 3 section has an "Extension point: feature-flag toggling"
 subsection marking exactly where to add a conditional call to your own toggler skill. Write a skill
