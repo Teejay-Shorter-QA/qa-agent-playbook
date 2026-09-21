@@ -1,0 +1,2 @@
+run *ARGS:
+    python3 greet.py {{ARGS}}
