@@ -14,6 +14,7 @@ against.
 ## Step 2 — Install the tracker script's dependencies
 
 ```sh
+python3 -m venv .venv && source .venv/bin/activate
 python3 -m pip install -r .claude/skills/test-case-tracker/scripts/requirements.txt
 ```
 

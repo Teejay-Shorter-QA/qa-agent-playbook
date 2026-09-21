@@ -88,6 +88,26 @@ def test_record_result_without_notes_preserves_existing_notes(tmp_path):
     assert ac1["notes"] == "flaky on CI"
 
 
+def test_list_cases_returns_current_case_list(tmp_path):
+    tracker.create_cases("SAMPLE-101", SAMPLE_CASES, tmp_path)
+    tracker.record_result(
+        "SAMPLE-101", "AC1", "fail", "cli", "printed once instead of 3 times", tmp_path
+    )
+
+    cases = tracker.list_cases("SAMPLE-101", tmp_path)
+
+    assert [c["id"] for c in cases] == ["AC1", "AC2"]
+    ac1, ac2 = cases
+    assert ac1["status"] == "fail"
+    assert ac1["evidence"] == "printed once instead of 3 times"
+    assert ac2["status"] == "untested"
+
+
+def test_list_cases_on_missing_case_file_raises_file_not_found(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        tracker.list_cases("NO-SUCH-TICKET", tmp_path)
+
+
 def test_generate_report_renders_table_and_summary(tmp_path):
     tracker.create_cases("SAMPLE-101", SAMPLE_CASES, tmp_path)
     tracker.record_result("SAMPLE-101", "AC1", "fail", "cli", "printed once instead of 3 times", tmp_path)

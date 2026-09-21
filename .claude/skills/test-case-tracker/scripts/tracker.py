@@ -43,6 +43,15 @@ def create_cases(ticket_key: str, cases: list[dict[str, Any]], base_dir: Path) -
     return path
 
 
+def list_cases(ticket_key: str, base_dir: Path) -> list[dict[str, Any]]:
+    """Return the current case list for a ticket (read-only)."""
+    path = _cases_path(ticket_key, base_dir)
+    if not path.exists():
+        raise FileNotFoundError(f"no case file for {ticket_key} at {path}")
+    data = yaml.safe_load(path.read_text())
+    return data["cases"]
+
+
 def record_result(
     ticket_key: str,
     case_id: str,
@@ -130,6 +139,9 @@ def _main() -> None:
     p_report = sub.add_parser("report")
     p_report.add_argument("ticket_key")
 
+    p_list = sub.add_parser("list")
+    p_list.add_argument("ticket_key")
+
     args = parser.parse_args()
     base_dir = Path(args.base_dir)
 
@@ -146,6 +158,9 @@ def _main() -> None:
     elif args.command == "report":
         path = generate_report(args.ticket_key, base_dir)
         print(f"wrote {path}")
+    elif args.command == "list":
+        cases = list_cases(args.ticket_key, base_dir)
+        print(json.dumps(cases, indent=2))
 
 
 if __name__ == "__main__":

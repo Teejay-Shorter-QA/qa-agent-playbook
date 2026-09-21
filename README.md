@@ -31,6 +31,21 @@ cp .env.example .env
 Edit `.env` and set `TARGET_APP_DIR` to the absolute path of the product repo you'll be verifying
 tickets against.
 
+The test-case tracker script needs its own Python dependencies (PEP 668 "externally-managed-environment"
+blocks a bare `pip install` on modern macOS/Debian/Ubuntu, so use a venv):
+
+```sh
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r .claude/skills/test-case-tracker/scripts/requirements.txt
+```
+
+To run every automated test in the repo (not just the ones a root-level `pytest` would collect —
+see `pytest.ini`):
+
+```sh
+python3 -m pytest
+```
+
 ## Plugins
 
 `.claude/settings.json` ships with an empty permissions skeleton. The setup this template is

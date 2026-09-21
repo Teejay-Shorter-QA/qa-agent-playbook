@@ -41,3 +41,6 @@ your own criteria):
 - Don't silently skip a check — if you skip one, say why.
 - **Onboarding-sync rule:** whenever a skill or command is added, renamed, or removed, update the
   roster in `.claude/commands/onboard.md` in the *same* change.
+- **Source-of-truth convention.** Where reference data exists (see `resources/example-source-of-truth/`
+  for a worked example), keep one raw source file and a generated human-readable doc from it. Never
+  hand-edit the generated file — regenerate it instead.

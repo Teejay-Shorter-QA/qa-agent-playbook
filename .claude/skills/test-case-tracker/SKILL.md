@@ -14,16 +14,19 @@ All reads/writes go through `scripts/tracker.py` (requires `PyYAML` — `pip ins
 scripts/requirements.txt`), never hand-edited directly, so status transitions and the case schema
 stay consistent no matter which skill is calling in.
 
+Run these commands from the repo root — `--base-dir` defaults to a path relative to wherever you
+invoke this from.
+
 ```bash
 # Create the initial case file (cases start "untested")
-python3 scripts/tracker.py create <KEY> --cases-json <path-to-json-list>
+python3 .claude/skills/test-case-tracker/scripts/tracker.py create <KEY> --cases-json <path-to-json-list>
 
 # Record one case's result
-python3 scripts/tracker.py record <KEY> --case-id <id> --status <pass|fail|blocked> \
+python3 .claude/skills/test-case-tracker/scripts/tracker.py record <KEY> --case-id <id> --status <pass|fail|blocked> \
   --verified-via <browser|api|cli> --evidence "<one line>" [--notes "<optional>"]
 
 # Regenerate the report from the current case file
-python3 scripts/tracker.py report <KEY>
+python3 .claude/skills/test-case-tracker/scripts/tracker.py report <KEY>
 ```
 
 Each JSON case object for `create` needs `id`, `title`, `steps` (list of strings), `expected`.
@@ -45,8 +48,8 @@ cases:
 
 ## Extension point: a real tracker
 
-See `docs/extension-points.md`. In short: `create_cases`, `record_result`, and `generate_report` in
-`scripts/tracker.py` are the entire seam — replace their bodies with API calls to
+See `docs/extension-points.md`. In short: `create_cases`, `record_result`, `generate_report`, and
+`list_cases` in `scripts/tracker.py` are the entire seam — replace their bodies with API calls to
 Testmo/Xray/Zephyr/etc., keep the same function signatures, and nothing calling into this skill
 needs to change.
 

@@ -6,7 +6,7 @@ the idea.
 
 ## 1. A real test-case tracker (Testmo, Xray, Zephyr, ...)
 
-`test-case-tracker`'s `scripts/tracker.py` exposes exactly three functions — this is the entire
+`test-case-tracker`'s `scripts/tracker.py` exposes exactly four functions — this is the entire
 seam:
 
 | Function | Signature | Replace its body with |
@@ -14,9 +14,10 @@ seam:
 | `create_cases` | `(ticket_key: str, cases: list[dict], base_dir: Path) -> Path` | An API call that creates cases in your tracker, keyed to `ticket_key` |
 | `record_result` | `(ticket_key: str, case_id: str, status: str, verified_via: str, evidence: str, base_dir: Path, notes: str \| None) -> Path` | An API call that records a result against `case_id` in your tracker |
 | `generate_report` | `(ticket_key: str, base_dir: Path) -> Path` | A call that reads results back from your tracker and renders/links a report |
+| `list_cases` | `(ticket_key: str, base_dir: Path) -> list[dict]` | A read-only call that returns the current case list for a ticket from your tracker |
 
 Keep the same signatures — everything that calls into `test-case-tracker` (`jira-to-test-cases`,
-`verify-ticket`) only ever calls these three functions and never touches `cases.yaml` directly, so
+`verify-ticket`) only ever calls these four functions and never touches `cases.yaml` directly, so
 swapping the backend never requires touching the orchestrating skill.
 
 Field mapping from the baseline schema to a typical tracker:

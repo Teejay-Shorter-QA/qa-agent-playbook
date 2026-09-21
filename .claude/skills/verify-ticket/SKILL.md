@@ -38,9 +38,11 @@ Run Phases 1–5 without stopping. Pause only for:
 1. Fetch the ticket (Atlassian MCP `getJiraIssue`, `fields: ["*all"]`). Read summary, description,
    Acceptance Criteria, comments.
 2. Detect the linked PR: `gh search prs "<KEY>" --json number,title,url,repository,state --limit 10`
-   (`gh search prs` doesn't support a `headRefName` field). If a PR is found, get its branch with a
-   second call: `gh pr view <number> --repo <repository> --json headRefName`. The PR's repo is the
-   **target repo** (as a remote `owner/name`); its head branch is the **branch under test**. Resolve
+   (`gh search prs` doesn't support a `headRefName` field). Note that the `repository` field is a
+   JSON object, not a plain string — use its `nameWithOwner` property. If a PR is found, get its
+   branch with a second call: `gh pr view <number> --repo <repository.nameWithOwner> --json
+   headRefName`. The PR's repo is the **target repo** (as a remote `owner/name`); its head branch is
+   the **branch under test**. Resolve
    the target repo to a **local checkout path**: if `TARGET_APP_DIR` in `.env` points at a local
    clone of that same repo, use it; otherwise ask the user for the local path of that repo — don't
    assume one. If no PR is found at all, fall back to `TARGET_APP_DIR` in `.env` as the target repo
@@ -74,7 +76,8 @@ target apps don't need one.
 ## Phase 4 — Verify each case
 > `[Phase 4/6] Working through the test cases (<UI | API | CLI> mode).`
 
-For each case in `cases.yaml`:
+Run `python3 .claude/skills/test-case-tracker/scripts/tracker.py list <KEY>` to get the current case
+list, then for each case:
 1. Walk its steps by hand against the running app — navigate/call/invoke, observe, compare to
    `expected`.
 2. **Manual verification is primary.** An automated spec/test run is a documented fallback only when
@@ -88,7 +91,8 @@ For each case, call `test-case-tracker`'s record step:
 
 ```
 python3 .claude/skills/test-case-tracker/scripts/tracker.py record <KEY> --case-id <id> \
-  --status <pass|fail|blocked> --verified-via <browser|api|cli> --evidence "<one line>"
+  --status <pass|fail|blocked> --verified-via <browser|api|cli> --evidence "<one line>" \
+  [--notes "<fallback reason, if applicable>"]
 ```
 
 Then generate the report:
@@ -101,10 +105,10 @@ This writes `verification-records/<KEY>/report.md`.
 
 ### Extension point: a real test-case tracker
 
-Swapping Testmo/Xray/Zephyr in for the file-based baseline means replacing exactly three functions
+Swapping Testmo/Xray/Zephyr in for the file-based baseline means replacing exactly four functions
 in `test-case-tracker`'s `scripts/tracker.py` — `create_cases`, `record_result`,
-`generate_report` — with calls to your tracker's API, keeping the same signatures. Nothing in this
-orchestrator changes. Full field-mapping guidance: `docs/extension-points.md`.
+`generate_report`, `list_cases` — with calls to your tracker's API, keeping the same signatures.
+Nothing in this orchestrator changes. Full field-mapping guidance: `docs/extension-points.md`.
 
 ## Phase 6 — Comment on the ticket
 > `[Phase 6/6] Posting the verification summary to <KEY>.`
