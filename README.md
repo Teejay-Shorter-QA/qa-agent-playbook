@@ -51,8 +51,7 @@ python3 -m pytest
 `.claude/settings.json` ships with an empty permissions skeleton. The setup this template is
 generalized from also wires up an organization-internal Claude Code plugin marketplace — that's
 deliberately **not** included here, since it wouldn't resolve outside that org. If your org has an
-equivalent plugin marketplace, add your own `enabledPlugins` block to
-`.claude/settings.json`.
+equivalent plugin marketplace, add your own `enabledPlugins` block to `.claude/settings.json`.
 
 ## Try it before you customize it
 
